@@ -7,17 +7,14 @@ import logger from './logger';
 import common from '../../common';
 
 const IS_PROD = nconf.get('IS_PROD');
-const EMAIL_SERVER = {
-  url: nconf.get('EMAIL_SERVER_URL'),
-  auth: {
-    user: nconf.get('EMAIL_SERVER_AUTH_USER'),
-    password: nconf.get('EMAIL_SERVER_AUTH_PASSWORD'),
-  },
-};
+
+const ADMIN_EMAIL = nconf.get('ADMIN_EMAIL');
+
 const BASE_URL = nconf.get('BASE_URL');
 
 let smtpTransporter = nodemailer.createTransport({
   service: nconf.get('SMTP_SERVICE'),
+  host: nconf.get('SMTP_HOST'),
   auth: {
     user: nconf.get('SMTP_USER'),
     pass: nconf.get('SMTP_PASS'),
@@ -142,23 +139,12 @@ export function sendTxn (mailingInfoArray, emailType, variables, personalVariabl
   }
 
   if (IS_PROD && mailingInfoArray.length > 0) {
-    got.post(`${EMAIL_SERVER.url}/job`, {
-      auth: `${EMAIL_SERVER.auth.user}:${EMAIL_SERVER.auth.password}`,
-      json: true,
-      body: {
-        type: 'email',
-        data: {
-          emailType,
-          to: mailingInfoArray,
-          variables,
-          personalVariables,
-        },
-        options: {
-          priority: 'high',
-          attempts: 5,
-          backoff: {delay: 10 * 60 * 1000, type: 'fixed'},
-        },
-      },
-    }).catch((err) => logger.error(err));
+    mailingInfoArray.forEach(addressee => send({
+      from: `<${ADMIN_EMAIL}>`,
+      to: addressee.email,
+      subject: `from ${ADMIN_EMAIL}`,
+      text: `Your name in Habitica the game: ${personalVariables[0].vars[0].content}`,
+      html: `Your name in Habitica the game: ${personalVariables[0].vars[0].content}`,
+    }));
   }
 }

@@ -304,7 +304,7 @@ api.resetPassword = {
       user.auth.local.passwordResetCode = passwordResetCode;
 
       sendEmail({
-        from: 'Habitica <admin@habitica.com>',
+        from: 'Habitica <mail@liga.sustems.eu>',
         to: email,
         subject: res.t('passwordResetEmailSubject'),
         text: res.t('passwordResetEmailText', {
